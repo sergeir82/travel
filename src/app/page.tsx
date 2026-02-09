@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Sparkles } from "lucide-react";
 import type { Itinerary, TripRequest } from "@/lib/itinerary";
 import { TagPicker } from "@/components/TagPicker";
 import { ItineraryMap } from "@/components/ItineraryMap";
@@ -115,7 +116,7 @@ export default function Home() {
       <div className="mx-auto max-w-6xl px-4 py-10">
         <header className="mb-8">
           <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            AI-Гид по Санкт-Петербургу и Ленобласти
+            AI-Гид по Санкт-Петербургу и Ленобласти 🏛️ 📸 😌
           </h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
             Персональный маршрут за 60 секунд: предпочтения &rarr; план дня &rarr; карта.
@@ -269,11 +270,15 @@ export default function Home() {
 
                 <div className="flex items-center gap-3 pt-1">
                   <Button onClick={generate} disabled={loading}>
-                    {loading ? "Генерирую…" : "Сгенерировать маршрут"}
+                    {loading ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Sparkles className="size-4 animate-pulse motion-reduce:animate-none" />
+                        Генерирую…
+                      </span>
+                    ) : (
+                      "Сгенерировать маршрут"
+                    )}
                   </Button>
-                  <span className="text-xs text-muted-foreground">
-                    Нужен только <code className="font-mono">GEMINI_API_KEY</code>
-                  </span>
                 </div>
 
                 {error && (
