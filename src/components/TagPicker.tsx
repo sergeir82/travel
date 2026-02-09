@@ -1,6 +1,7 @@
 "use client";
 
 import { ALL_TAGS, type PoiTag } from "@/lib/pois";
+import { Badge } from "@/components/ui/badge";
 
 export function TagPicker(props: {
   value: PoiTag[];
@@ -18,22 +19,16 @@ export function TagPicker(props: {
       {ALL_TAGS.map(({ tag, label }) => {
         const active = value.includes(tag);
         return (
-          <button
+          <Badge
             key={tag}
-            type="button"
+            variant={active ? "default" : "outline"}
+            className="cursor-pointer select-none transition-colors"
             onClick={() => toggle(tag)}
-            className={[
-              "rounded-full border px-3 py-1 text-sm transition",
-              active
-                ? "border-zinc-900 bg-zinc-900 text-white"
-                : "border-black/10 bg-white hover:bg-zinc-50",
-            ].join(" ")}
           >
             {label}
-          </button>
+          </Badge>
         );
       })}
     </div>
   );
 }
-

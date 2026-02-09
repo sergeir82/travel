@@ -8,6 +8,10 @@ type YMapInstance = {
     add: (obj: unknown) => void;
     removeAll?: () => void;
   };
+  setBounds?: (
+    bounds: [[number, number], [number, number]],
+    options?: Record<string, unknown>,
+  ) => void;
   setCenter: (
     center: [number, number],
     zoom?: number,
@@ -33,6 +37,81 @@ type YMapsApi = {
     options?: Record<string, unknown>,
   ) => unknown;
 };
+
+function syncPoisToMap(args: {
+  map: YMapInstance;
+  ymaps: YMapsApi;
+  pois: Poi[];
+  center: { lat: number; lon: number };
+}) {
+  const { map, ymaps, pois, center } = args;
+
+  // Clear old markers.
+  if (map.geoObjects?.removeAll) map.geoObjects.removeAll();
+
+  // Add markers for POIs.
+  for (const p of pois) {
+    const placemark = new ymaps.Placemark(
+      [p.lat, p.lon],
+      {
+        balloonContentHeader: p.name,
+        balloonContentBody: p.short,
+      },
+      { preset: "islands#blueIcon" },
+    );
+    map.geoObjects.add(placemark);
+  }
+
+  // Fit all points into view (or fallback to a sensible zoom).
+  if (!pois.length) {
+    map.setCenter([center.lat, center.lon], 10, { duration: 200 });
+    return;
+  }
+
+  if (pois.length === 1) {
+    map.setCenter([center.lat, center.lon], 13, { duration: 200 });
+    return;
+  }
+
+  // Compute bounds.
+  let minLat = Infinity;
+  let maxLat = -Infinity;
+  let minLon = Infinity;
+  let maxLon = -Infinity;
+  for (const p of pois) {
+    minLat = Math.min(minLat, p.lat);
+    maxLat = Math.max(maxLat, p.lat);
+    minLon = Math.min(minLon, p.lon);
+    maxLon = Math.max(maxLon, p.lon);
+  }
+
+  // If bounds are degenerate (all points identical), fall back to a fixed zoom.
+  const boundsAreValid =
+    Number.isFinite(minLat) &&
+    Number.isFinite(maxLat) &&
+    Number.isFinite(minLon) &&
+    Number.isFinite(maxLon) &&
+    (minLat !== maxLat || minLon !== maxLon);
+
+  if (map.setBounds && boundsAreValid) {
+    map.setBounds(
+      [
+        [minLat, minLon],
+        [maxLat, maxLon],
+      ],
+      {
+        checkZoomRange: true,
+        duration: 200,
+        // top, right, bottom, left margins in px
+        zoomMargin: [48, 48, 48, 48],
+      },
+    );
+    return;
+  }
+
+  // Fallback.
+  map.setCenter([center.lat, center.lon], 11, { duration: 200 });
+}
 
 declare global {
   interface Window {
@@ -117,6 +196,8 @@ export function ItineraryMapClient(props: { pois: Poi[] }) {
               { suppressMapOpenBlock: true },
             );
           }
+
+          syncPoisToMap({ map:mapRef.current, ymaps, pois, center });
         });
       })
       .catch((e) => {
@@ -145,24 +226,7 @@ export function ItineraryMapClient(props: { pois: Poi[] }) {
     const ymaps = ymapsRef.current;
     if (!map || !ymaps) return;
 
-    // Clear old markers.
-    if (map.geoObjects?.removeAll) map.geoObjects.removeAll();
-
-    // Add markers for POIs.
-    for (const p of pois) {
-      const placemark = new ymaps.Placemark(
-        [p.lat, p.lon],
-        {
-          balloonContentHeader: p.name,
-          balloonContentBody: p.short,
-        },
-        { preset: "islands#blueIcon" },
-      );
-      map.geoObjects.add(placemark);
-    }
-
-    // Recenter.
-    map.setCenter([center.lat, center.lon], pois.length ? 11 : 10, { duration: 200 });
+    syncPoisToMap({ map, ymaps, pois, center });
   }, [pois, center.lat, center.lon]);
 
   return (
