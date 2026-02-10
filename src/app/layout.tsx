@@ -25,6 +25,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
+      <head>
+        {/* Runtime public env (generated in Docker). */}
+        <script src="/env.js" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
       >

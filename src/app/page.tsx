@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type ApiOk = { request: TripRequest; itinerary: Itinerary; pois: Poi[] };
 type ApiErr = { error: string; details?: unknown; raw?: unknown };
@@ -268,17 +269,37 @@ export default function Home() {
                   </Button>
                 </div>
 
-                <div className="flex items-center gap-3 pt-1">
-                  <Button onClick={generate} disabled={loading}>
+                <div className="pt-1">
+                  <div className="flex items-center gap-3">
+                    <Button
+                      onClick={generate}
+                      disabled={loading}
+                      aria-busy={loading}
+                      className={loading ? "relative overflow-hidden" : undefined}
+                    >
+                      {loading ? (
+                        <>
+                          <span
+                            aria-hidden
+                            className="pointer-events-none absolute inset-0 -translate-x-[120%] bg-gradient-to-r from-transparent via-white/25 to-transparent motion-reduce:hidden"
+                            style={{ animation: "shimmer 1.1s linear infinite" }}
+                          />
+                          <span className="relative inline-flex items-center gap-2">
+                            <Sparkles className="size-4 animate-pulse motion-reduce:animate-none" />
+                            Генерирую…
+                          </span>
+                        </>
+                      ) : (
+                        "Сгенерировать маршрут"
+                      )}
+                    </Button>
                     {loading ? (
-                      <span className="inline-flex items-center gap-2">
-                        <Sparkles className="size-4 animate-pulse motion-reduce:animate-none" />
-                        Генерирую…
+                      <span className="text-xs text-muted-foreground">
+                        Обычно 10–30 сек
                       </span>
-                    ) : (
-                      "Сгенерировать маршрут"
-                    )}
-                  </Button>
+                    ) : null}
+                  </div>
+
                 </div>
 
                 {error && (
@@ -297,9 +318,24 @@ export default function Home() {
               </CardHeader>
               <CardContent className="overflow-hidden">
                 {!result ? (
-                  <p className="text-sm text-muted-foreground">
-                    Нажмите &laquo;Сгенерировать маршрут&raquo; &mdash; здесь появится план дня и карта точек.
-                  </p>
+                  loading ? (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Skeleton className="h-6 w-3/5" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-4/5" />
+                      </div>
+                      <Skeleton className="h-[360px] w-full rounded-2xl" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-5 w-32" />
+                        <Skeleton className="h-16 w-full" />
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Нажмите &laquo;Сгенерировать маршрут&raquo; &mdash; здесь появится план дня и карта точек.
+                    </p>
+                  )
                 ) : (
                   <div className="space-y-5">
                     <div>

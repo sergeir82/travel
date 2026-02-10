@@ -1,0 +1,15 @@
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    # Берём переменные окружения из файла при старте.
+    # Можно использовать ваш существующий `.env.local`.
+    env_file:
+      - .env.local
+    environment:
+      NODE_ENV: "production"
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+    restart: unless-stopped
+

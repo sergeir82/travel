@@ -199,7 +199,7 @@ function buildPrompt(input: {
     })),
   );
 
-  return [
+  const promt = [
     "Ты — AI-консьерж по Санкт‑Петербургу и Ленобласти.",
     "Составь компактный маршрут по дням и времени под запрос пользователя.",
     "",
@@ -243,6 +243,10 @@ function buildPrompt(input: {
       0,
     ),
   ].join("\n");
+
+  console.log('!promt', promt);
+
+  return promt;
 }
 
 export async function POST(req: Request) {

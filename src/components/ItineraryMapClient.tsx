@@ -116,6 +116,7 @@ function syncPoisToMap(args: {
 declare global {
   interface Window {
     ymaps?: YMapsApi;
+    __ENV?: Record<string, string | undefined>;
   }
 }
 
@@ -165,7 +166,10 @@ export function ItineraryMapClient(props: { pois: Poi[] }) {
   }, [pois]);
 
   useEffect(() => {
-    const apiKey = process.env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY;
+    const apiKey =
+      (typeof window !== "undefined" &&
+        window.__ENV?.NEXT_PUBLIC_YANDEX_MAPS_API_KEY) ||
+      process.env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY;
     if (!apiKey) {
       setLoadError("Missing NEXT_PUBLIC_YANDEX_MAPS_API_KEY");
       return;
